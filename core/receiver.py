@@ -2,6 +2,10 @@ import multiprocessing, socket, json
 from event import Event
 
 class Receiver(multiprocessing.Process):
+    """
+    Lightweigth class which sole purpose is to accept a UDP connection, and wait for incoming events.
+    This runs in a separate process and should be as available as possible
+    """
 
     _master = None      # the master socket
     _event_queue = None  # the 
@@ -23,7 +27,11 @@ class Receiver(multiprocessing.Process):
         
 
     def run(self):
-        # start listening
+        """
+        Start listening. When data comes in, instantiate an Event object with the received data
+        and add it to th event queue. Let the other process handle validation, because we want to
+        be ready to accept the next event data
+        """
         while True:
             data, addr = self._master.recvfrom(self._buffer)
             self._event_queue.put(Event(data))
