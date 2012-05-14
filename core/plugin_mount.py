@@ -47,7 +47,12 @@ class EventHandler(object):
     
     _redis = None
     
-    def __init__(self, event, redis):
+    def __init__(self, redis):
+
+        self._redis = redis
+
+    def set_event(self, event):
+
         """
         self.event_type needs to be defined in the plugin because the dispatcher loops through all the plugins
         to find the one that handles the event type that needs to be saved, we tell it to pass the event on to the next
@@ -57,7 +62,7 @@ class EventHandler(object):
             if event.get_type() == self.event_type:
                 # we give it the event, and the redis connection to save the event
                 self.event = event
-                self._redis = redis
+                return self
             else:
                 # not our event type, continue
                 raise PluginPasson
@@ -67,5 +72,19 @@ class EventHandler(object):
             raise PluginPasson
         
         
+class PluginContainer(object):
+
+    """
+    Collection of instantiated plugins
+    """
+
+    _plugins = {}
+
+    def __init__(self, redis):
         
-        
+        for plugin in EventHandler.plugins:
+            self._plugins[plugin.event_type] = plugin(redis)
+
+    def get(self, event_type):
+        return self._plugins[event_type] if event_type in self._plugins else None
+

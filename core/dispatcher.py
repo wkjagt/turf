@@ -9,11 +9,14 @@ class Dispatcher(multiprocessing.Process):
     """
     _event_queue = None
     _redis = None
-    
-    def __init__(self, event_queue, redis):
+    _plugin_container = None
+
+    def __init__(self, event_queue, redis, plugin_container):
         multiprocessing.Process.__init__(self)
         self._event_queue = event_queue
         self._redis = redis
+        self._plugin_container = plugin_container
+
 
     def run(self):
         """
@@ -24,14 +27,11 @@ class Dispatcher(multiprocessing.Process):
             # an event was passed to the queue by the receiver. 
             next_event = self._event_queue.get()
 
-            # loop through the plugin classes and try to instantiate it with the event. If that throws
-            # an exception, try with the next. Don't create a reference to it, so each unused plugin will
-            # be garbage collected
-            for plugin in plugin_mount.EventHandler.plugins:
-                try:
-                    plugin(next_event, self._redis).register_event()
-                except plugin_mount.PluginPasson:
-                    pass
+
+            plugin = self._plugin_container.get(next_event.get_type())
+
+            if plugin is not None:
+                plugin.set_event(next_event).register_event()
             
             # consider the task done, because the plugin is done registering it
             self._event_queue.task_done()
