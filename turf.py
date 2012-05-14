@@ -4,10 +4,9 @@
 import multiprocessing, glob, imp, sys, signal
 from core.receiver import Receiver
 from core.dispatcher import Dispatcher
-from core.web import WebRequestHandler
+from core.web import WebRequestHandler, WebServer
 from core.plugin_mount import PluginContainer
 from os.path import join, basename, splitext
-from BaseHTTPServer import HTTPServer
 
 
 import redis
@@ -62,7 +61,9 @@ if __name__ == '__main__':
     dispatcher.start()
 
     # start the web server
-    web_server = HTTPServer((WEB_HOST, WEB_PORT), WebRequestHandler)
+    web_server = WebServer((WEB_HOST, WEB_PORT), WebRequestHandler)
+    web_server.set_argument('plugin_container', plugin_container)
+
     web_server.serve_forever()
 
 

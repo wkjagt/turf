@@ -39,3 +39,52 @@ class RegistrationHandler(EventHandler):
     
     def storeSorted(self):
         self.pipe.zadd(self.event.get_type(), int(time()), self.key)
+
+
+    def get_results(self, query):
+        print query
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

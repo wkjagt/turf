@@ -2,22 +2,40 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from urlparse import urlparse, parse_qs
 import plugin_mount
 
+
+class WebServer(HTTPServer):
+
+    _arguments = {}
+
+    def __init__(self, *args, **kwargs): 
+        HTTPServer.__init__(self, *args, **kwargs)
+
+    def set_argument(self, name, value):
+        self._arguments[name] = value
+
+
+    def get_argument(self, name):
+        return self._arguments[name] if name in self._arguments else None
+
+
+
+
 class WebRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-
-    	event_type = 'registration'
-
-        for plugin in plugin_mount.EventHandler.plugins:
-        	if plugin.event_type == event_type:
-       			plugin = plugin()
-
-
-
-
-
         path, query = self.parse_path()
+        
+        if path == '/favicon.ico':
+            return
+        
+        event_type = 'registration'
+
+        plugin = self.server.get_argument('plugin_container').get(event_type)
+
+        results = plugin.get_results(query)
+        
+
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -35,6 +53,8 @@ class WebRequestHandler(BaseHTTPRequestHandler):
 
         return path, query
 
+    # def get_event_type(self)
+
 
 if __name__ == '__main__':
 
@@ -42,9 +62,17 @@ if __name__ == '__main__':
     PORT = 8080
 
     try:
-        web_server = HTTPServer((HOST, PORT), WebRequestHandler)
+        web_server = WebServer((HOST, PORT), WebRequestHandler)
+        web_server.set_argument('test', '23')
+
+
+        # import pdb
+        # from pprint import pprint as pp
+        # pdb.set_trace()
+
+
         web_server.serve_forever()
     except KeyboardInterrupt:
         print '^C received, shutting down server'
-        server.socket.close()
+        web_server.socket.close()
 
