@@ -1,3 +1,5 @@
+from time import strptime, mktime
+
 class PluginPasson(Exception):
     """
     Custom exception to let the dispatcher know that it hasn't yet found the correct plugin
@@ -70,6 +72,12 @@ class EventHandler(object):
             # event type not set, continue (if all the plugins are coded correctly,
             # this is the default plugin, but we can't be certain)
             raise PluginPasson
+        
+        
+    def iso_to_unix(self, iso):
+        if len(iso) == 19:
+            struct = strptime(iso, '%Y-%m-%dT%H:%M:%S')
+            return int(mktime(struct))
         
         
 class PluginContainer(object):

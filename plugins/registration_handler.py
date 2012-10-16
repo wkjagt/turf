@@ -42,10 +42,17 @@ class RegistrationHandler(EventHandler):
 
 
     def get_results(self, query):
-        print query
+        # get range
+        start = self.iso_to_unix(query['start_date'].pop()) if 'start_date' in query else 0
+        end = self.iso_to_unix(query['end_date'].pop()) if 'end_date' in query else 'inf'
         
+        ids = self._redis.zrangebyscore('registration', start, end)
         
+        registrations = []
+        for id in ids:
+            registrations.append(self._redis.hgetall(id))
         
+        return registrations
         
         
         
